@@ -1,0 +1,18 @@
+1. La recolección de datos por frame
+Como el juego está configurado para correr a 45 FPS (reloj.tick(45)) y la función registrar_decision_manual() guarda un registro nuevo en el CSV en cada frame mientras la bala está en pantalla, el volumen de datos se dispara.
+
+    Si lo dejamos corriendo 15 minutos (900 segundos), vamos a generar aproximadamente 40,500 filas de datos.
+
+    Por la física que programamos (velocidad 15, gravedad 1), un salto dura más o menos 30 frames. Así que esos dos saltos iniciales solo nos darían unas 60 filas etiquetadas como salto (salto = 1).
+
+    Durante los 15 minutos restantes donde no tocamos el teclado, el personaje se queda en el suelo recibiendo impactos. Esto nos va a generar más de 40,400 filas etiquetadas con no saltar (salto = 0).
+
+2. El engaño al entrenar el modelo
+Al presionar 'T' y pasarle estos datos al MLPClassifier, el modelo va a hacer trampa. Al notar que el 99.85% de los datos dicen que la acción correcta es 0, la red neuronal va a deducir que la forma más matemáticamente segura de minimizar el error es predecir siempre que no hay que saltar.
+
+3. El resultado en la consola vs. en el juego
+Lo más interesante de este error es que la consola nos va a felicitar. El programa va a imprimir algo como: MLP entrenado. Accuracy test ≈ 0.998. Como estudiantes podríamos pensar que logramos un modelo casi perfecto.
+
+Sin embargo, al presionar 'A' para pasar al modo automático, nuestro personaje se va a quedar completamente quieto dejándose impactar por todas las balas. Básicamente, el modelo sobreajustó (overfitting) a la clase mayoritaria y aprendió que la "estrategia ganadora" era no hacer absolutamente nada.
+
+Para que la práctica nos salga bien y el modelo generalice, me doy cuenta de que necesitamos jugar activamente un par de minutos esquivando balas de verdad, para que el dataset tenga un equilibrio saludable entre ejemplos de 0 y 1.
